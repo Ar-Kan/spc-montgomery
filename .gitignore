@@ -1,0 +1,17 @@
+/.*
+.*
+node_modules
+!.gitignore
+__pypackages__/
+*.pyc
+__pycache__/
+*.egg-info
+*.zip
+dist/
+cdk.context.json
+npm-debug.log*
+!functions/.env
+!.editorconfig
+!.eslintrc.yaml
+!.prettierignore
+!.prettierrc.yaml
