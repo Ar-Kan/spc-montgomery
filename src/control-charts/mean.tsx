@@ -1,7 +1,8 @@
+import { Chart as ChartJS } from "chart.js";
 import { AnnotationOptions } from "chartjs-plugin-annotation";
 import { memo, RefObject } from "react";
 import { Line } from "react-chartjs-2";
-import { Chart as ChartJS } from "chart.js";
+import { ControlLimits } from "../stream/data/utils";
 
 function chartLine({
   value,
@@ -37,22 +38,19 @@ function chartLine({
 }
 
 export default function MeanChart({
-  UCL,
-  UWL,
-  MEAN,
-  LWL,
-  LCL,
+  controlLimits,
   durationTime = 30e3,
   chartRef,
 }: {
-  UCL: number;
-  UWL: number;
-  MEAN: number;
-  LWL: number;
-  LCL: number;
+  controlLimits: ControlLimits | null;
   durationTime?: number;
-  chartRef: RefObject<ChartJS<"line", number[], number>>;
+  chartRef: RefObject<ChartJS<"line", any[], number>>;
 }) {
+  if (controlLimits === null) {
+    return null;
+  }
+
+  const { UCL, LCL, UWL, LWL, MEAN, U1sCL, L1sCL } = controlLimits;
   const chartMinMax: AnnotationOptions[] = [
     {
       type: "line",
@@ -94,31 +92,39 @@ export default function MeanChart({
                 chartLine({
                   value: UCL,
                   color: "gray",
-                  label: UCL.toString(),
+                  label: UCL.toFixed(4).toString(),
                   yAdjust: -10,
+                }),
+                chartLine({
+                  value: LCL,
+                  color: "gray",
+                  label: LCL.toFixed(4).toString(),
+                  yAdjust: 10,
                 }),
                 chartLine({
                   value: UWL,
                   color: "#a3a5ac",
-                  label: UWL.toString(),
-                  yAdjust: -10,
-                }),
-                chartLine({
-                  value: MEAN,
-                  color: "rgba(163,165,172,0.64)",
+                  label: UWL.toFixed(4).toString(),
                   yAdjust: -10,
                 }),
                 chartLine({
                   value: LWL,
                   color: "#a3a5ac",
-                  label: LWL.toString(),
+                  label: LWL.toFixed(4).toString(),
                   yAdjust: 10,
                 }),
                 chartLine({
-                  value: LCL,
-                  color: "gray",
-                  label: LCL.toString(),
-                  yAdjust: 10,
+                  value: U1sCL,
+                  color: "rgba(163,165,172,0.8)",
+                }),
+                chartLine({
+                  value: L1sCL,
+                  color: "rgba(163,165,172,0.8)",
+                }),
+                chartLine({
+                  value: MEAN,
+                  color: "rgba(163,165,172,0.8)",
+                  yAdjust: -10,
                 }),
               ],
             },

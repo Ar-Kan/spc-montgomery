@@ -1,4 +1,3 @@
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { RealTimeScale, StreamingPlugin } from "@robloche/chartjs-plugin-streaming";
 import "chartjs-adapter-luxon";
 import {
@@ -12,23 +11,16 @@ import {
   Tooltip,
 } from "chart.js";
 import Annotation from "chartjs-plugin-annotation";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { MeanChartMemo } from "./control-charts/mean";
-import {
-  controlLimits,
-  DataSample,
-  LCL,
-  LWL,
-  MEAN,
-  sampleSize,
-  STD,
-  UCL,
-  UWL,
-} from "./stream/data";
-import { ActionSignal, actionSignalsState, signalCheck, SignalStateType } from "./stream/state";
-import { usePollingEffect } from "./utils";
+import { DataSample, sampleParameters, streamParameters, StreamParameters } from "./stream/data";
+import { ActionSignal, actionSignalsState, signalCheck } from "./stream/sate";
 import { nSample } from "./stream/stats";
+import { usePollingEffect } from "./utils";
+import { Flag } from "./components/Flag";
+import { Signal } from "./components/Signal";
+import { computeControlLimits, ControlLimits, estimateParameters } from "./stream/data/utils";
 
 ChartJS.register(
   CategoryScale,
@@ -43,94 +35,6 @@ ChartJS.register(
   Annotation,
 );
 
-function Flag({ color }: { color: string }) {
-  return (
-    <div
-      style={{
-        width: 20,
-        height: 20,
-        backgroundColor: color,
-        borderRadius: "50%",
-        border: "1px solid black",
-      }}
-    />
-  );
-}
-
-function Signal({
-  state,
-  label,
-  description,
-  timestamp = 0,
-}: {
-  state: SignalStateType;
-  label: string;
-  description: string;
-  timestamp?: number;
-}) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        gap: "3rem",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: 4,
-        backgroundColor: "rgba(0, 0, 0, 0.05)",
-        borderRadius: 4,
-        marginBottom: 4,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          gap: 2,
-          alignItems: "center",
-        }}
-      >
-        <Flag
-          color={
-            state === SignalStateType.ALERT
-              ? "red"
-              : state === SignalStateType.WARNING
-                ? "orange"
-                : "green"
-          }
-        />
-        <InfoOutlinedIcon
-          style={{
-            cursor: "help",
-            color: "gray",
-            fontSize: "1rem",
-          }}
-          data-tooltip-id="my-tooltip"
-          data-tooltip-content={description}
-        />
-        <span>{label}</span>
-      </div>
-      <div
-        style={{
-          fontSize: "0.8rem",
-          display: "flex",
-          gap: 3,
-          alignItems: "baseline",
-        }}
-      >
-        <span style={{ color: "gray", paddingRight: "2px" }}>Begun at:</span>
-        <pre
-          style={{
-            color: timestamp === 0 ? "gray" : "black",
-            whiteSpace: "nowrap",
-            margin: 0,
-          }}
-        >
-          {timestamp ? new Date(timestamp).toLocaleTimeString() : "N/A"}
-        </pre>
-      </div>
-    </div>
-  );
-}
-
 enum ProcessState {
   IN_CONTROL,
   UNCONTROLLED,
@@ -142,26 +46,59 @@ let dataStream: DataSample[] = [];
 
 export default function App() {
   const chartRef = useRef<ChartJS<"line", any[], number>>(null);
+  const [controlLimits, setControlLimits] = useState<ControlLimits | null>(null);
   const [signalState, setSignalState] = useState(actionSignalsState);
   const [processState, setProcessState] = useState<ProcessState>(ProcessState.IN_CONTROL);
   const [pollingInterval, setPollingInterval] = useState<number>(0.5e3);
 
+  const estimatedParameters: StreamParameters = useMemo(() => {
+    if (dataStream.length === 0) {
+      // Generate preliminary samples
+      for (let i = sampleParameters.preliminarySampleSize; i > 0; i--) {
+        const sample = nSample(
+          sampleParameters.sampleSize,
+          streamParameters.mean,
+          streamParameters.std,
+        );
+        const timestamp = Date.now() - i * pollingInterval;
+        dataStream.push(new DataSample(timestamp, sample));
+      }
+    }
+
+    return estimateParameters(dataStream);
+  }, []);
+
   usePollingEffect(
     async () => {
+      if (controlLimits === null) {
+        setControlLimits(
+          computeControlLimits({ ...estimatedParameters, sampleSize: sampleParameters.sampleSize }),
+        );
+        return;
+      }
+
       let sample;
       if (processState === ProcessState.TRENDING) {
         sample = nSample(
-          sampleSize,
+          sampleParameters.sampleSize,
           dataStream.at(-1)?.mean ||
-            MEAN + (Date.now() - (dataStream.at(-1)?.timestamp || 0)) * 1e-7,
-          STD,
+            streamParameters.mean + (Date.now() - (dataStream.at(-1)?.timestamp || 0)) * 1e-7,
+          streamParameters.std,
         );
       } else if (processState === ProcessState.UNCONTROLLED) {
-        sample = nSample(sampleSize / 2, MEAN, STD * 3);
+        sample = nSample(
+          sampleParameters.sampleSize / 2,
+          streamParameters.mean,
+          streamParameters.std * 3,
+        );
       } else if (processState === ProcessState.DRIFTING) {
-        sample = nSample(sampleSize, MEAN * 1.03, STD);
+        sample = nSample(
+          sampleParameters.sampleSize,
+          streamParameters.mean * 1.03,
+          streamParameters.std,
+        );
       } else {
-        sample = nSample(sampleSize, MEAN, STD);
+        sample = nSample(sampleParameters.sampleSize, streamParameters.mean, streamParameters.std);
       }
       const data = new DataSample(Date.now(), sample);
       dataStream = [...dataStream.slice(-100), data];
@@ -169,13 +106,13 @@ export default function App() {
         signalCheck({
           stream: dataStream,
           lastState: prevState,
-          controlLimits,
+          controlLimits: controlLimits,
           pollingInterval,
         }),
       );
       updateChart(dataStream);
     },
-    [processState],
+    [estimatedParameters, controlLimits, processState],
     { interval: pollingInterval },
   );
 
@@ -206,16 +143,12 @@ export default function App() {
           flexDirection: "row",
           gap: 2,
           alignItems: "top",
-          justifyContent: "start",
+          justifyContent: "space-around",
           padding: "16px",
         }}
       >
         <MeanChartMemo
-          UCL={UCL}
-          UWL={UWL}
-          MEAN={MEAN}
-          LWL={LWL}
-          LCL={LCL}
+          controlLimits={controlLimits}
           durationTime={pollingInterval * 50}
           chartRef={chartRef}
         />

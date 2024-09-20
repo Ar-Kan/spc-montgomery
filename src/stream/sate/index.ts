@@ -1,5 +1,6 @@
 import { max } from "lodash";
-import { controlLimits as cLimits, DataSample } from "./data";
+import { DataSample } from "../data";
+import { ControlLimits } from "../data/utils";
 import {
   getAlternatingPoints,
   getPointsInLimit,
@@ -66,7 +67,7 @@ export function signalCheck({
   stream: DataSample[];
   lastState: SignalStateMap;
   pollingInterval: number;
-  controlLimits: typeof cLimits;
+  controlLimits: ControlLimits;
 }): SignalStateMap {
   const stream = _stream.slice(-20);
   if (stream.length === 0) {
