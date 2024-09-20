@@ -5,11 +5,6 @@ export interface StreamParameters {
   std: number;
 }
 
-export interface ControlParameters {
-  controlDistance: number;
-  warningDistance: number;
-}
-
 export const streamParameters: StreamParameters = {
   mean: 1.5,
   std: 0.15,
@@ -20,39 +15,26 @@ export const sampleParameters = {
   preliminarySampleSize: 20,
 };
 
-export const controlParameters: ControlParameters = {
-  controlDistance: 3,
-  warningDistance: 2,
-};
+/**
+ * Factors for control limits of a control chart.
+ */
+export interface FactorsForCL {
+  /**Factor for the average*/
+  A2: number;
+  /**Factor for the lower control limit of the range */
+  D3: number;
+  /**Factor for the upper control limit of the range */
+  D4: number;
+}
 
-// export const MEAN = 1.5;
-// export const STD = 0.15;
-// export const sampleSize = 5;
-//
-// export const controlDistance = 3;
-// export const controlDeviation = round((controlDistance * STD) / Math.sqrt(sampleSize), 4);
-// export const UCL = MEAN + controlDeviation;
-// export const LCL = MEAN - controlDeviation;
-//
-// export const warningDistance = 2;
-// export const warningDeviation = round((warningDistance * STD) / Math.sqrt(sampleSize), 4);
-// export const UWL = MEAN + warningDeviation;
-// export const LWL = MEAN - warningDeviation;
-//
-// export const oneSigmaDeviation = round(STD / Math.sqrt(sampleSize), 4);
-// export const U1sCL = MEAN + oneSigmaDeviation;
-// export const L1sCL = MEAN - oneSigmaDeviation;
-//
-// export const controlLimits = {
-//   UCL,
-//   LCL,
-//   U1sCL,
-//   L1sCL,
-//   UWL,
-//   LWL,
-//   MEAN,
-//   STD,
-// };
+/**
+ * Factors for control limits for sample size 5.
+ */
+export const factors5: FactorsForCL = {
+  A2: 0.577,
+  D3: 0,
+  D4: 2.114,
+};
 
 export class DataSample {
   constructor(

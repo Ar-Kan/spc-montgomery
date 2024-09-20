@@ -37,12 +37,14 @@ function chartLine({
   };
 }
 
-export default function MeanChart({
+export default function ControlChart({
   controlLimits,
+  datasetName,
   durationTime = 30e3,
   chartRef,
 }: {
   controlLimits: ControlLimits | null;
+  datasetName: string;
   durationTime?: number;
   chartRef: RefObject<ChartJS<"line", any[], number>>;
 }) {
@@ -50,7 +52,7 @@ export default function MeanChart({
     return null;
   }
 
-  const { UCL, LCL, UWL, LWL, MEAN, U1sCL, L1sCL } = controlLimits;
+  const { UCL, LCL, UWL, LWL, CenterLine, U1sCL, L1sCL } = controlLimits;
   const chartMinMax: AnnotationOptions[] = [
     {
       type: "line",
@@ -122,7 +124,7 @@ export default function MeanChart({
                   color: "rgba(163,165,172,0.8)",
                 }),
                 chartLine({
-                  value: MEAN,
+                  value: CenterLine,
                   color: "rgba(163,165,172,0.8)",
                   yAdjust: -10,
                 }),
@@ -145,7 +147,7 @@ export default function MeanChart({
         data={{
           datasets: [
             {
-              label: "Mean",
+              label: datasetName,
               backgroundColor: "rgba(54, 162, 235, 0.5)",
               borderColor: "rgb(54, 162, 235)",
               cubicInterpolationMode: "default",
@@ -163,4 +165,4 @@ export default function MeanChart({
   );
 }
 
-export const MeanChartMemo = memo(MeanChart);
+export const ControlChartMemo = memo(ControlChart);

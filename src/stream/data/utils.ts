@@ -1,5 +1,14 @@
-import { DataSample, StreamParameters } from "./index";
+import { DataSample, FactorsForCL, StreamParameters } from "./index";
 
+
+/**
+ * Estimate the parameters of a data stream.
+ *
+ * **Note**: This function estimates the stream parameters using the range of the samples.
+ *
+ * @param samples - Data samples
+ * @returns Estimated stream parameters
+ */
 export function estimateParameters(samples: DataSample[]): StreamParameters {
   const mean = samples.reduce((a, b) => a + b.mean, 0) / samples.length;
   const std = samples.reduce((a, b) => a + b.range, 0) / samples.length;
@@ -20,36 +29,70 @@ export interface ControlLimits {
   UWL: number;
   /**Lower Warning Limit */
   LWL: number;
-  /**Mean */
-  MEAN: number;
+  /**Center Line */
+  CenterLine: number;
   /**Standard Deviation */
   STD: number;
 }
 
-export function computeControlLimits({
+export interface ChartControlLimits {
+  xBar: ControlLimits;
+  R: ControlLimits;
+}
+
+export function computeChartControlLimits({
   mean,
   std,
-  sampleSize,
-  controlDistance = 3,
-  warningDistance = 2,
+  factors,
 }: {
   mean: number;
   std: number;
-  sampleSize: number;
-  controlDistance?: number;
-  warningDistance?: number;
-}): ControlLimits {
-  const controlDeviation = (controlDistance * std) / Math.sqrt(sampleSize);
-  const UCL = mean + controlDeviation;
-  const LCL = mean - controlDeviation;
+  factors: FactorsForCL;
+}): ChartControlLimits {
+  return {
+    xBar: {
+      ...computeControlLimits({
+        center: mean,
+        UCD: factors.A2 * std,
+        LCD: factors.A2 * std,
+      }),
+      CenterLine: mean,
+      STD: std,
+    },
+    R: {
+      ...computeControlLimits({
+        center: 0,
+        UCD: factors.D4 * std,
+        LCD: factors.D3 * std,
+      }),
+      CenterLine: mean,
+      STD: std,
+    },
+  };
+}
 
-  const warningDeviation = (warningDistance * std) / Math.sqrt(sampleSize);
-  const UWL = mean + warningDeviation;
-  const LWL = mean - warningDeviation;
+/**
+ * Compute control limits for a control chart.
+ * @param center - Center line
+ * @param UCD - Upper control deviation
+ * @param LCD - Lower control deviation
+ */
+function computeControlLimits({
+  center,
+  UCD,
+  LCD,
+}: {
+  center: number;
+  UCD: number;
+  LCD: number;
+}): Omit<ControlLimits, "CenterLine" | "STD"> {
+  const UCL = center + UCD;
+  const LCL = center - LCD;
 
-  const oneSigmaDeviation = std / Math.sqrt(sampleSize);
-  const U1sCL = mean + oneSigmaDeviation;
-  const L1sCL = mean - oneSigmaDeviation;
+  const UWL = center + UCD * (2 / 3);
+  const LWL = center - LCD * (2 / 3);
 
-  return { UCL, LCL, U1sCL, L1sCL, UWL, LWL, MEAN: mean, STD: std };
+  const U1sCL = center + UCD * (1 / 3);
+  const L1sCL = center - LCD * (1 / 3);
+  return { UCL, LCL, U1sCL, L1sCL, UWL, LWL };
 }

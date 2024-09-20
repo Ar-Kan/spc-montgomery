@@ -11,16 +11,26 @@ import {
   Tooltip,
 } from "chart.js";
 import Annotation from "chartjs-plugin-annotation";
-import { useMemo, useRef, useState } from "react";
+import { RefObject, useMemo, useRef, useState } from "react";
 import { Tooltip as ReactTooltip } from "react-tooltip";
-import { MeanChartMemo } from "./control-charts/mean";
-import { DataSample, sampleParameters, streamParameters, StreamParameters } from "./stream/data";
+import { Flag } from "./components/Flag";
+import { Signal } from "./components/Signal";
+import { ControlChartMemo } from "./control-charts/control-chart";
+import {
+  DataSample,
+  factors5,
+  sampleParameters,
+  streamParameters,
+  StreamParameters,
+} from "./stream/data";
+import {
+  ChartControlLimits,
+  computeChartControlLimits,
+  estimateParameters,
+} from "./stream/data/utils";
 import { ActionSignal, actionSignalsState, signalCheck } from "./stream/sate";
 import { nSample } from "./stream/stats";
 import { usePollingEffect } from "./utils";
-import { Flag } from "./components/Flag";
-import { Signal } from "./components/Signal";
-import { computeControlLimits, ControlLimits, estimateParameters } from "./stream/data/utils";
 
 ChartJS.register(
   CategoryScale,
@@ -45,8 +55,10 @@ enum ProcessState {
 let dataStream: DataSample[] = [];
 
 export default function App() {
-  const chartRef = useRef<ChartJS<"line", any[], number>>(null);
-  const [controlLimits, setControlLimits] = useState<ControlLimits | null>(null);
+  const chartXBarRef = useRef<ChartJS<"line", any[], number>>(null);
+  const chartRRef = useRef<ChartJS<"line", any[], number>>(null);
+
+  const [controlLimits, setControlLimits] = useState<ChartControlLimits | null>(null);
   const [signalState, setSignalState] = useState(actionSignalsState);
   const [processState, setProcessState] = useState<ProcessState>(ProcessState.IN_CONTROL);
   const [pollingInterval, setPollingInterval] = useState<number>(0.5e3);
@@ -71,8 +83,12 @@ export default function App() {
   usePollingEffect(
     async () => {
       if (controlLimits === null) {
+        // Compute trial control limits
         setControlLimits(
-          computeControlLimits({ ...estimatedParameters, sampleSize: sampleParameters.sampleSize }),
+          computeChartControlLimits({
+            ...estimatedParameters,
+            factors: factors5,
+          }),
         );
         return;
       }
@@ -100,29 +116,45 @@ export default function App() {
       } else {
         sample = nSample(sampleParameters.sampleSize, streamParameters.mean, streamParameters.std);
       }
+
       const data = new DataSample(Date.now(), sample);
       dataStream = [...dataStream.slice(-100), data];
+
       setSignalState((prevState) =>
         signalCheck({
           stream: dataStream,
           lastState: prevState,
-          controlLimits: controlLimits,
+          controlLimits: controlLimits.xBar,
           pollingInterval,
         }),
       );
-      updateChart(dataStream);
+
+      updateChart(
+        chartXBarRef,
+        dataStream.map((d) => ({
+          x: d.timestamp,
+          y: d.mean,
+        })),
+      );
+      updateChart(
+        chartRRef,
+        dataStream.map((d) => ({
+          x: d.timestamp,
+          y: d.range,
+        })),
+      );
     },
     [estimatedParameters, controlLimits, processState],
     { interval: pollingInterval },
   );
 
-  function updateChart(sample: DataSample[]) {
-    const chart = chartRef.current;
+  function updateChart(
+    ref: RefObject<ChartJS<"line", any[], number>>,
+    sample: { x: number; y: number }[],
+  ) {
+    const chart = ref.current;
     if (!chart) return;
-    chart.data.datasets[0].data = sample.map((d) => ({
-      x: d.timestamp,
-      y: d.mean,
-    }));
+    chart.data.datasets[0].data = sample;
     chart.update("quiet");
   }
 
@@ -147,15 +179,32 @@ export default function App() {
           padding: "16px",
         }}
       >
-        <MeanChartMemo
-          controlLimits={controlLimits}
-          durationTime={pollingInterval * 50}
-          chartRef={chartRef}
-        />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
+          }}
+        >
+          <ControlChartMemo
+            datasetName="X-Bar"
+            controlLimits={controlLimits?.xBar || null}
+            durationTime={pollingInterval * 50}
+            chartRef={chartXBarRef}
+          />
+
+          <ControlChartMemo
+            datasetName="R"
+            controlLimits={controlLimits?.R || null}
+            durationTime={pollingInterval * 50}
+            chartRef={chartRRef}
+          />
+        </div>
 
         <div>
-          <button onClick={() => setSignalState(actionSignalsState)}>Reset Signals</button>
-          <button onClick={() => console.log({ dataStream, signalState })}>log</button>
+          <button onClick={() => console.log({ dataStream, signalState, controlLimits })}>
+            log
+          </button>
           <fieldset>
             <legend>Process State</legend>
             <div>

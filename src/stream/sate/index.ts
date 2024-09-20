@@ -86,7 +86,7 @@ export function signalCheck({
     }
   }
 
-  const { UCL, LCL, U1sCL, L1sCL, UWL, LWL, MEAN } = controlLimits;
+  const { UCL, LCL, U1sCL, L1sCL, UWL, LWL, CenterLine } = controlLimits;
 
   // 1. One or more points outside the control limits.
   const POC = stateFromPointSignal({
@@ -157,13 +157,13 @@ export function signalCheck({
       getPointsInLimit({
         stream,
         window: 8,
-        limit: MEAN,
+        limit: CenterLine,
         position: "above",
       }),
       getPointsInLimit({
         stream,
         window: 8,
-        limit: MEAN,
+        limit: CenterLine,
         position: "below",
       }),
     ],
