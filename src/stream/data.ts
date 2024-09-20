@@ -2,7 +2,7 @@ import { round } from "lodash";
 
 export const MEAN = 1.5;
 export const STD = 0.15;
-export const sampleSize = 20;
+export const sampleSize = 5;
 
 export const controlDistance = 3;
 export const controlDeviation = round((controlDistance * STD) / Math.sqrt(sampleSize), 4);

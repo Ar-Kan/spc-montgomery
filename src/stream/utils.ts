@@ -1,6 +1,7 @@
 import { inRange, max, min } from "lodash";
 import { DataSample } from "./data";
 import { SignalStateType } from "./state";
+import { computeEntropy, isAlternating } from "./stats";
 
 /**
  * Returns the state of a signal based on the most recent point.
@@ -179,26 +180,6 @@ export function getAlternatingPoints({
   return [];
 }
 
-function isAlternating(points: number[]) {
-  if (points.length < 2) return true; // Consider a single element or empty array as alternating
-
-  let direction = 0; // 0: undefined, 1: up, -1: down
-
-  for (let i = 1; i < points.length; i++) {
-    if (points[i] > points[i - 1]) {
-      if (direction === 1) return false; // two ups in a row
-      direction = 1; // set direction to up
-    } else if (points[i] < points[i - 1]) {
-      if (direction === -1) return false; // two downs in a row
-      direction = -1; // set direction to down
-    } else {
-      return false; // two equal points
-    }
-  }
-
-  return true; // the array is alternating
-}
-
 export function getPointsNonRandom({
   stream,
   window,
@@ -225,40 +206,4 @@ export function getPointsNonRandom({
   } while (posStart < stream.length);
 
   return [];
-}
-
-/**
- * Returns the entropy of a set of points.
- *
- * The entropy is calculated as:
- *
- * ```
- * Η(X) = -Σ p(x) * log2(p(x))
- * H'(X) = Η(X) / log2(n)
- * ```
- *
- * where `p(x)` is the probability of a point `x`, with `H(X) ∈ [0, log2(n)]`, and `H'(X) ∈ [0, 1]`.
- * In information theory, entropy is a measure of the uncertainty or randomness of a set of points,
- * a higher entropy indicates randomness.
- *
- * @param points - The set of points.
- * @returns The entropy of the points.
- */
-function computeEntropy(points: number[]): number {
-  const frequencyTable = points.reduce(
-    (acc, point) => {
-      acc[point] = (acc[point] || 0) + 1;
-      return acc;
-    },
-    {} as Record<number, number>,
-  );
-
-  const total = points.length;
-  const maxEntropy = Object.values(frequencyTable).reduce((entropy, frequency) => {
-    const p = frequency / total;
-    return entropy - p * Math.log2(p);
-  }, 0);
-
-  // Scale the entropy to [0, 1]
-  return maxEntropy / Math.log2(Object.keys(frequencyTable).length);
 }
