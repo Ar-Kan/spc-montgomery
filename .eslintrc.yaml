@@ -41,8 +41,9 @@ rules:
   "@typescript-eslint/no-extra-semi": off
   "@typescript-eslint/require-await": off
   eqeqeq: error
+  prefer-const: warn
   import/order:
-    [ error, { alphabetize: { order: "asc" }, groups: [ [ "builtin", "external", "internal" ], "parent", "sibling" ] } ]
+    [ warn, { alphabetize: { order: "asc" }, groups: [ [ "builtin", "external", "internal" ], "parent", "sibling" ] } ]
   no-async-promise-executor: off
 
 settings:

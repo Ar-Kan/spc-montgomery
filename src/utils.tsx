@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 
 export function usePollingEffect(
   asyncCallback: () => Promise<void>,
-  dependencies = [],
+  dependencies: any[] = [],
   {
     interval = 10_000, // 10 seconds
     onCleanUp = () => {},
