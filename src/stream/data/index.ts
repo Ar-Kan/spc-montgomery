@@ -25,6 +25,7 @@ export interface FactorsForCL {
   D3: number;
   /**Factor for the upper control limit of the range */
   D4: number;
+  d2: number;
 }
 
 /**
@@ -34,6 +35,7 @@ export const factors5: FactorsForCL = {
   A2: 0.577,
   D3: 0,
   D4: 2.114,
+  d2: 2.326,
 };
 
 export class DataSample {

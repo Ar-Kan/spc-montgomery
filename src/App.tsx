@@ -31,6 +31,7 @@ import {
 import { ActionSignal, actionSignalsState, signalCheck } from "./stream/sate";
 import { nSample } from "./stream/stats";
 import { usePollingEffect } from "./utils";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 ChartJS.register(
   CategoryScale,
@@ -202,7 +203,11 @@ export default function App() {
         </div>
 
         <div>
-          <button onClick={() => console.log({ dataStream, signalState, controlLimits })}>
+          <button
+            onClick={() =>
+              console.log({ dataStream, signalState, controlLimits, estimatedParameters })
+            }
+          >
             log
           </button>
           <fieldset>
@@ -248,6 +253,63 @@ export default function App() {
               </label>
             </div>
           </fieldset>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "3rem",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: 4,
+              backgroundColor: "rgba(0, 0, 0, 0.05)",
+              borderRadius: 4,
+              marginTop: "1rem",
+              marginBottom: 4,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                gap: 2,
+                alignItems: "center",
+              }}
+            >
+              <InfoOutlinedIcon
+                style={{
+                  cursor: "help",
+                  color: "gray",
+                  fontSize: "1rem",
+                }}
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content="Process Capability Ratio"
+              />
+              <span>PCR</span>
+            </div>
+            <div
+              style={{
+                fontSize: "0.8rem",
+                display: "flex",
+                gap: 3,
+                alignItems: "baseline",
+                color: "gray",
+              }}
+            >
+              <pre
+                style={{
+                  whiteSpace: "nowrap",
+                  margin: 0,
+                }}
+              >
+                {controlLimits !== null
+                  ? // (controlLimits.xBar.UCL - controlLimits.xBar.LCL)
+                    (100 / ((2 - 1) / (6 * (estimatedParameters.std / factors5.d2))))
+                      .toFixed(2)
+                      .toString() + "%"
+                  : "N/A"}
+              </pre>
+            </div>
+          </div>
+
           <h3>Action Signals</h3>
 
           <Signal
