@@ -23,6 +23,7 @@ import {
 } from "./stream/data";
 import {
   ChartControlLimits,
+  computeArl,
   computeChartControlLimits,
   estimateParameters,
 } from "./stream/data/functions";
@@ -30,8 +31,9 @@ import { actionSignalsState, signalCheck } from "./stream/state";
 import { nSample } from "./stream/stats";
 import { usePollingEffect } from "./utils";
 import ActionSignals from "./components/ActionSignals";
-import PCR from "./components/PCR";
 import ProcessStateActions, { ProcessState } from "./components/ProcessStateActions";
+import Indicator from "./components/Indicator";
+import { formatedPcr } from "./stream/utils";
 
 ChartJS.register(
   CategoryScale,
@@ -206,7 +208,35 @@ export default function App() {
 
           <ProcessStateActions processState={processState} setProcessState={setProcessState} />
 
-          <PCR std={controlLimits !== null ? estimatedParameters.std : null} d2={factors5.d2} />
+          <div
+            style={{
+              paddingTop: "1rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: 1,
+            }}
+          >
+            <Indicator
+              symbol="PCR"
+              name="Process Capability Ratio"
+              description="Fraction of items produced that will meet the specifications."
+              value={
+                controlLimits !== null ? formatedPcr(estimatedParameters.std, factors5.d2) : "N/A"
+              }
+            />
+            <Indicator
+              symbol="ARL"
+              name="Average Run Length"
+              description="Expected number of samples taken to detect a shift of one-sigma with n=5."
+              value={computeArl(0.75)}
+            />
+            <Indicator
+              symbol="ATS"
+              name="Average Time to Signal"
+              description="Expected time to detect a shift of one-sigma with n=5."
+              value={`${(computeArl(0.75) * pollingInterval) / 1e3}s`}
+            />
+          </div>
 
           <ActionSignals signalState={signalState} />
         </div>

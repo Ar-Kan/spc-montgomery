@@ -1,16 +1,17 @@
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { renderToStaticMarkup } from "react-dom/server";
-import { computePcr } from "../stream/data/functions";
 
-function formatedPcr(std: number | null, d2: number): string {
-  if (std === null) {
-    return "N/A";
-  }
-  const pcr = computePcr({ LSL: 0, USL: 1, std, d2 });
-  return `${(100 / pcr).toFixed(2)}%`;
-}
-
-export default function PCR({ std, d2 }: { std: number | null; d2: number }) {
+export default function Indicator({
+  symbol,
+  name,
+  value,
+  description,
+}: {
+  symbol: string;
+  name: string;
+  description?: string;
+  value: string | number;
+}) {
   return (
     <div
       style={{
@@ -21,7 +22,6 @@ export default function PCR({ std, d2 }: { std: number | null; d2: number }) {
         padding: 4,
         backgroundColor: "rgba(0, 0, 0, 0.05)",
         borderRadius: 4,
-        marginTop: "1rem",
         marginBottom: 4,
       }}
     >
@@ -41,12 +41,20 @@ export default function PCR({ std, d2 }: { std: number | null; d2: number }) {
           data-tooltip-id="my-tooltip"
           data-tooltip-html={renderToStaticMarkup(
             <div>
-              <div>Process Capability Ratio</div>
-              <small>Fraction of items produced that will meet the specifications.</small>
+              <div>{name}</div>
+              {description ? (
+                <small
+                  style={{
+                    fontStyle: "italic",
+                  }}
+                >
+                  {description}
+                </small>
+              ) : null}
             </div>,
           )}
         />
-        <span>PCR</span>
+        <span>{symbol}</span>
       </div>
       <div
         style={{
@@ -63,7 +71,7 @@ export default function PCR({ std, d2 }: { std: number | null; d2: number }) {
             margin: 0,
           }}
         >
-          {formatedPcr(std, d2)}
+          {value}
         </pre>
       </div>
     </div>

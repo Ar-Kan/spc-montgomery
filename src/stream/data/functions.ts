@@ -127,3 +127,21 @@ export function computePcr({
 }): number {
   return (USL - LSL) / (6 * (std / d2));
 }
+
+/**
+ * Compute the Average Run Length (ARL), which is the average number of samples
+ * taken to detect a shift of one-sigma.
+ * The formula for the ARL is:
+ * ```
+ * β = Φ(L - k√n) + Φ(-L - k√n)
+ * ARL = 1 / (1 - β)
+ * ```
+ * where `Φ` is the Cumulative Distribution Function (CDF) of the standard normal distribution,
+ * `L` is the control limit, `k` is the Factor, and `n` is the sample size.
+ * Note that `β` is the probability of not detecting the shift on the first sample.
+ *
+ * @param betaRisk - Probability of not detecting the shift on the first sample
+ */
+export function computeArl(betaRisk: number): number {
+  return Math.ceil(1 / (1 - betaRisk));
+}
