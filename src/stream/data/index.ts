@@ -31,7 +31,7 @@ export interface FactorsForCL {
 /**
  * Factors for control limits for sample size 5.
  */
-export const factors5: FactorsForCL = {
+export const factors_n5: FactorsForCL = {
   A2: 0.577,
   D3: 0,
   D4: 2.114,

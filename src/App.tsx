@@ -19,7 +19,7 @@ import ProcessStateActions, { ProcessState } from "./components/ProcessStateActi
 import { ControlChartMemo } from "./control-charts/control-chart";
 import {
   DataSample,
-  factors5,
+  factors_n5,
   sampleParameters,
   streamParameters,
   StreamParameters,
@@ -83,7 +83,7 @@ export default function App() {
         setControlLimits(
           computeChartControlLimits({
             ...estimatedParameters,
-            factors: factors5,
+            factors: factors_n5,
           }),
         );
         return;
@@ -221,7 +221,7 @@ export default function App() {
               name="Process Capability Ratio"
               description="Fraction of items produced that will meet the specifications."
               value={
-                controlLimits !== null ? formatedPcr(estimatedParameters.std, factors5.d2) : "N/A"
+                controlLimits !== null ? formatedPcr(estimatedParameters.std, factors_n5.d2) : "N/A"
               }
             />
             <Indicator
