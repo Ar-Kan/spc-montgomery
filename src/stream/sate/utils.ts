@@ -17,14 +17,15 @@ export function stateFromPointSignal({
   samples: DataSample[][];
 }) {
   samples = samples.filter((sample) => sample.length > 0);
-  const lastSamples = samples.map((sample) => sample[sample.length - 1]);
 
   if (samples.length > 0) {
-    const maxStart = max(lastSamples.map((sample) => sample.timestamp))!;
-    const maxEnd = max(lastSamples.map((sample) => sample.timestamp))!;
+    // When the flags begin
+    const start = min(samples.map((sample) => sample[0].timestamp))!;
+    // When the flags end
+    const end = max(samples.map((sample) => sample[sample.length - 1].timestamp))!;
     return {
-      state: lastSample.timestamp === maxEnd ? SignalStateType.ALERT : SignalStateType.WARNING,
-      timestamp: maxStart,
+      state: lastSample.timestamp === end ? SignalStateType.ALERT : SignalStateType.WARNING,
+      timestamp: start,
     };
   }
 
@@ -123,11 +124,13 @@ export function getPointsWithTrend({
   do {
     const samples = streamReverse.slice(posStart - window, posStart).reverse();
 
-    const [x, y] = unzip(samples.map((sample) => [sample.timestamp, sample.mean]));
+    const [x, y] = unzip(samples.map((sample, index) => [index, sample.mean]));
     const { m, r2 } = OLS(x, y);
 
     // Check if the correlation and slope are significant
-    if (r2 > 0.5 && Math.abs(m) > 0.3) {
+    // |m| = 1 => |x| = |y|
+    // FIXME: m values don't seem to be correct
+    if (r2 > 0.6 && Math.abs(m) > 0.03) {
       return samples;
     }
 
