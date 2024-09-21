@@ -1,6 +1,6 @@
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { SignalStateType } from "../stream/state";
 import { Flag } from "./Flag";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 export function Signal({
   state,

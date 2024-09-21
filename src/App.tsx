@@ -13,6 +13,9 @@ import {
 import Annotation from "chartjs-plugin-annotation";
 import { RefObject, useMemo, useRef, useState } from "react";
 import { Tooltip as ReactTooltip } from "react-tooltip";
+import ActionSignals from "./components/ActionSignals";
+import Indicator from "./components/Indicator";
+import ProcessStateActions, { ProcessState } from "./components/ProcessStateActions";
 import { ControlChartMemo } from "./control-charts/control-chart";
 import {
   DataSample,
@@ -29,11 +32,8 @@ import {
 } from "./stream/data/functions";
 import { actionSignalsState, signalCheck } from "./stream/state";
 import { nSample } from "./stream/stats";
-import { usePollingEffect } from "./utils";
-import ActionSignals from "./components/ActionSignals";
-import ProcessStateActions, { ProcessState } from "./components/ProcessStateActions";
-import Indicator from "./components/Indicator";
 import { formatedPcr } from "./stream/utils";
+import { usePollingEffect } from "./utils";
 
 ChartJS.register(
   CategoryScale,
