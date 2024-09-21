@@ -1,6 +1,6 @@
-import { ActionSignal, SignalStateMap } from "../stream/state";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { signalDescriptions, SignalStateMap, SignalStateType } from "../stream/state/models";
 import { Flag } from "./Flag";
-import { Signal } from "./Signal";
 
 function Legend() {
   return (
@@ -39,70 +39,93 @@ function Legend() {
   );
 }
 
+function Signal({
+  state,
+  label,
+  description,
+  timestamp = 0,
+}: {
+  state: SignalStateType;
+  label: string;
+  description: string;
+  timestamp?: number;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: "3rem",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: 4,
+        backgroundColor: "rgba(0, 0, 0, 0.05)",
+        borderRadius: 4,
+        marginBottom: 4,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          gap: 2,
+          alignItems: "center",
+        }}
+      >
+        <Flag
+          color={
+            state === SignalStateType.ALERT
+              ? "red"
+              : state === SignalStateType.WARNING
+                ? "orange"
+                : "green"
+          }
+        />
+        <InfoOutlinedIcon
+          style={{
+            cursor: "help",
+            color: "gray",
+            fontSize: "1rem",
+          }}
+          data-tooltip-id="my-tooltip"
+          data-tooltip-content={description}
+        />
+        <span>{label}</span>
+      </div>
+      <div
+        style={{
+          fontSize: "0.8rem",
+          display: "flex",
+          gap: 3,
+          alignItems: "baseline",
+        }}
+      >
+        <span style={{ color: "gray", paddingRight: "2px" }}>Begun at:</span>
+        <pre
+          style={{
+            color: timestamp === 0 ? "gray" : "black",
+            whiteSpace: "nowrap",
+            margin: 0,
+          }}
+        >
+          {timestamp ? new Date(timestamp).toLocaleTimeString() : "N/A"}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
 export default function ActionSignals({ signalState }: { signalState: SignalStateMap }) {
   return (
     <div>
       <h3>Action Signals</h3>
 
-      <Signal
-        {...signalState[ActionSignal.POC]}
-        label="POC"
-        description="One or more points outside the control limits."
-      />
-
-      <Signal
-        {...signalState[ActionSignal.TWO_THREE_2s]}
-        label="2/3-2s"
-        description="Two of three consecutive points outside the two-sigma warning limits but still inside the control limits."
-      />
-
-      <Signal
-        {...signalState[ActionSignal.FOUR_FIVE_1s]}
-        label="4/5-1s"
-        description="Four of five consecutive points beyond the one-sigma limits."
-      />
-
-      <Signal
-        {...signalState[ActionSignal.EIGHT_OS]}
-        label="8OS"
-        description="A run of eight consecutive points on one side of the center line."
-      />
-
-      <Signal
-        {...signalState[ActionSignal.SIX_TREND]}
-        label="6Trend"
-        description="Six points in a row steadily increasing or decreasing."
-      />
-
-      <Signal
-        {...signalState[ActionSignal.FIFTEEN_C]}
-        label="15C"
-        description="Fifteen points in a row in zone C (zero to one-sigma) - both above and below the center line."
-      />
-
-      <Signal
-        {...signalState[ActionSignal.FOURTEEN_ALT]}
-        label="14Alt"
-        description="Fourteen points in a row alternating up and down."
-      />
-
-      <Signal
-        {...signalState[ActionSignal.EIGHT_BS]}
-        label="8BS"
-        description="Eight points in a row on both sides of the center line with none in zone C (zero to one-sigma)."
-      />
-
-      <Signal
-        {...signalState[ActionSignal.NR]}
-        label="NR"
-        description="An unusual or nonrandom pattern in the data."
-      />
-
-      <Signal
-        {...signalState[ActionSignal.PNL]}
-        label="PNL"
-        description="One or more points near a warning or control limit."
-      />
+      {signalDescriptions.map((description) => (
+        <Signal
+          key={description.action}
+          {...signalState[description.action]}
+          label={description.action}
+          description={description.description}
+        />
+      ))}
 
       <Legend />
     </div>

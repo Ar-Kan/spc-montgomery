@@ -2,12 +2,12 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { renderToStaticMarkup } from "react-dom/server";
 
 export default function Indicator({
-  symbol,
+  label,
   name,
   value,
   description,
 }: {
-  symbol: string;
+  label: string;
   name: string;
   description?: string;
   value: string | number;
@@ -54,7 +54,7 @@ export default function Indicator({
             </div>,
           )}
         />
-        <span>{symbol}</span>
+        <span>{label}</span>
       </div>
       <div
         style={{

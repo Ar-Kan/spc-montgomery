@@ -1,7 +1,8 @@
 import { inRange, max, min, unzip } from "lodash";
 import { DataSample } from "../data";
 import { computeEntropy, isAlternating, OLS } from "../stats";
-import { SignalStateType } from "./index";
+
+import { SignalStateType } from "./models";
 
 /**
  * Returns the state of a signal based on the most recent point.

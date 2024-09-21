@@ -8,42 +8,7 @@ import {
   getPointsWithTrend,
   stateFromPointSignal,
 } from "./functions";
-
-export enum SignalStateType {
-  OK,
-  WARNING,
-  ALERT,
-}
-
-export enum ActionSignal {
-  /*One or more points outside the control limits.*/
-  POC = "POC",
-  /*Two of three consecutive points outside the two-sigma warning limits but still inside the control limits.*/
-  TWO_THREE_2s = "2/3-2s",
-  /*Four of five consecutive points beyond the one-sigma limits.*/
-  FOUR_FIVE_1s = "4/5-1s",
-  /*A run of eight consecutive points on one side of the center line.*/
-  EIGHT_OS = "8OS",
-  /*Six points in a row steadily increasing or decreasing.*/
-  SIX_TREND = "6Trend",
-  /*Fifteen points in a row in zone C (both above and below the center line).*/
-  FIFTEEN_C = "15C",
-  /*Fourteen points in a row alternating up and down.*/
-  FOURTEEN_ALT = "14Alt",
-  /*Eight points in a row on both sides of the center line with none in zone C.*/
-  EIGHT_BS = "8BS",
-  /*An unusual or nonrandom pattern in the data.*/
-  NR = "NR",
-  /*One or more points near a warning or control limit.*/
-  PNL = "PNL",
-}
-
-export interface SignalState {
-  state: SignalStateType;
-  timestamp: number;
-}
-
-export type SignalStateMap = Record<ActionSignal, SignalState>;
+import { ActionSignal, SignalState, SignalStateMap, SignalStateType } from "./models";
 
 export const actionSignalsState: SignalStateMap = {
   [ActionSignal.POC]: { state: SignalStateType.OK, timestamp: 0 },
@@ -69,7 +34,7 @@ export function signalCheck({
   pollingInterval: number;
   controlLimits: ControlLimits;
 }): SignalStateMap {
-  const stream = _stream.slice(-20);
+  const stream = _stream.slice(-50);
   if (stream.length === 0) {
     return actionSignalsState;
   }
