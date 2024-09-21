@@ -228,13 +228,13 @@ export default function App() {
               label="ARL"
               name="Average Run Length"
               description="Expected number of samples taken to detect a shift of one-sigma with n=5."
-              value={computeArl(0.75)}
+              value={computeArl(factors_n5.betaRisk)}
             />
             <Indicator
               label="ATS"
               name="Average Time to Signal"
               description="Expected time to detect a shift of one-sigma with n=5."
-              value={`${(computeArl(0.75) * pollingInterval) / 1e3}s`}
+              value={`${(computeArl(factors_n5.betaRisk) * pollingInterval) / 1e3}s`}
             />
           </div>
 

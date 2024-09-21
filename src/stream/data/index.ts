@@ -26,6 +26,8 @@ export interface FactorsForCL {
   /**Factor for the upper control limit of the range */
   D4: number;
   d2: number;
+  /**`β-risk`: probability of not detecting a `1.0σ` shift on the first sample of size `n` */
+  betaRisk: number;
 }
 
 /**
@@ -36,6 +38,7 @@ export const factors_n5: FactorsForCL = {
   D3: 0,
   D4: 2.114,
   d2: 2.326,
+  betaRisk: 0.1,
 };
 
 export class DataSample {
