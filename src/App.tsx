@@ -25,8 +25,8 @@ import {
   ChartControlLimits,
   computeChartControlLimits,
   estimateParameters,
-} from "./stream/data/utils";
-import { actionSignalsState, signalCheck } from "./stream/sate";
+} from "./stream/data/functions";
+import { actionSignalsState, signalCheck } from "./stream/state";
 import { nSample } from "./stream/stats";
 import { usePollingEffect } from "./utils";
 import ActionSignals from "./components/ActionSignals";

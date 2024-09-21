@@ -2,7 +2,7 @@ import { Chart as ChartJS } from "chart.js";
 import { AnnotationOptions } from "chartjs-plugin-annotation";
 import { memo, RefObject } from "react";
 import { Line } from "react-chartjs-2";
-import { ControlLimits } from "../stream/data/utils";
+import { ControlLimits } from "../stream/data/functions";
 
 function chartLine({
   value,

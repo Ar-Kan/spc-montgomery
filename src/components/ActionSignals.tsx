@@ -1,4 +1,4 @@
-import { ActionSignal, SignalStateMap } from "../stream/sate";
+import { ActionSignal, SignalStateMap } from "../stream/state";
 import { Flag } from "./Flag";
 import { Signal } from "./Signal";
 

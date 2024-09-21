@@ -1,13 +1,13 @@
 import { max } from "lodash";
 import { DataSample } from "../data";
-import { ControlLimits } from "../data/utils";
+import { ControlLimits } from "../data/functions";
 import {
   getAlternatingPoints,
   getPointsInLimit,
   getPointsNonRandom,
   getPointsWithTrend,
   stateFromPointSignal,
-} from "./utils";
+} from "./functions";
 
 export enum SignalStateType {
   OK,

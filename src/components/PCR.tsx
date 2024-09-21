@@ -1,5 +1,6 @@
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import { computePcr } from "../stream/data/utils";
+import { renderToStaticMarkup } from "react-dom/server";
+import { computePcr } from "../stream/data/functions";
 
 function formatedPcr(std: number | null, d2: number): string {
   if (std === null) {
@@ -38,7 +39,12 @@ export default function PCR({ std, d2 }: { std: number | null; d2: number }) {
             fontSize: "1rem",
           }}
           data-tooltip-id="my-tooltip"
-          data-tooltip-content="Process Capability Ratio"
+          data-tooltip-html={renderToStaticMarkup(
+            <div>
+              <div>Process Capability Ratio</div>
+              <small>Fraction of items produced that will meet the specifications.</small>
+            </div>,
+          )}
         />
         <span>PCR</span>
       </div>
