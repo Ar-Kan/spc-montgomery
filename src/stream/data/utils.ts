@@ -96,3 +96,34 @@ function computeControlLimits({
   const L1sCL = center - LCD * (1 / 3);
   return { UCL, LCL, U1sCL, L1sCL, UWL, LWL };
 }
+
+/**
+ * Compute the Process Capability Ratio (PCR), which estimate the fraction of
+ * items produced that will meet the specifications.
+ *
+ * The formula for the PCR is:
+ * ```
+ * PCR = (USL - LSL) / (6 * (std / d2))
+ * ```
+ * where `USL` is the Upper Specification Limit, `LSL` is the Lower Specification Limit,
+ * `std` is the Standard Deviation, and `d2` is the Factor. Note that there is no mathematical
+ * or statistical relationship between the control limits and specification limits.
+ * @param LSL - Lower Specification Limit
+ * @param USL - Upper Specification Limit
+ * @param std - Standard Deviation
+ * @param d2 - Factor
+ * @returns Process Capability Ratio
+ */
+export function computePcr({
+  LSL,
+  USL,
+  std,
+  d2,
+}: {
+  USL: number;
+  LSL: number;
+  std: number;
+  d2: number;
+}): number {
+  return (USL - LSL) / (6 * (std / d2));
+}
