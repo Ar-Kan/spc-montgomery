@@ -1,6 +1,6 @@
-import { inRange, max, min } from "lodash";
+import { inRange, max, min, unzip } from "lodash";
 import { DataSample } from "../data";
-import { computeEntropy, isAlternating } from "../stats";
+import { computeEntropy, isAlternating, OLS } from "../stats";
 import { SignalStateType } from "./index";
 
 /**
@@ -104,40 +104,31 @@ export function getPointsInLimit({
  * Returns the most recent points with a trend.
  * @param stream - The data stream.
  * @param window - The consecutive number of points to check.
- * @param threshold - The max number of points with a trend.
- * @param trend - The trend to check.
  * @returns The points with a trend.
  */
 export function getPointsWithTrend({
   stream,
   window,
-  threshold,
-  trend,
 }: {
   stream: DataSample[];
   window: number;
-  threshold?: number;
-  trend: "increasing" | "decreasing";
 }): DataSample[] {
   if (stream.length < window) {
     return [];
-  }
-
-  if (threshold === undefined) {
-    threshold = window;
   }
 
   const streamReverse = [...stream].reverse();
 
   let posStart = window;
   do {
-    const samples = streamReverse.slice(posStart - window, posStart);
-    const points = samples.filter((sample) =>
-      trend === "increasing" ? sample.mean > samples[0].mean : sample.mean < samples[0].mean,
-    );
+    const samples = streamReverse.slice(posStart - window, posStart).reverse();
 
-    if (points.length >= threshold) {
-      return samples.reverse();
+    const [x, y] = unzip(samples.map((sample) => [sample.timestamp, sample.mean]));
+    const { m, r2 } = OLS(x, y);
+
+    // Check if the correlation and slope are significant
+    if (r2 > 0.5 && Math.abs(m) > 0.3) {
+      return samples;
     }
 
     posStart++;

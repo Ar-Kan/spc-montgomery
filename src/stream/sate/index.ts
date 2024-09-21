@@ -176,12 +176,6 @@ export function signalCheck({
       getPointsWithTrend({
         stream,
         window: 6,
-        trend: "increasing",
-      }),
-      getPointsWithTrend({
-        stream,
-        window: 6,
-        trend: "decreasing",
       }),
     ],
   });

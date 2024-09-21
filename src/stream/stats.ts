@@ -24,6 +24,55 @@ export function nSample(n: number, mean = 0, std = 1) {
   return Array.from({ length: n }, () => gaussianRandom(mean, std));
 }
 
+/**
+ * Compute an Ordinary Least Squares (OLS) regression.
+ *
+ * The OLS regression is calculated as:
+ * ```
+ * m = (n * Σ(x_i * y_i) - Σ(x_i) * Σ(y_i)) / (n * Σ(x_i^2) - (Σ(x_i))^2)
+ * b = (Σ(y_i) - m * Σ(x_i)) / n
+ * ```
+ * where `m` is the slope and `b` is the intercept of the function `y = m * x + b`.
+ *
+ * The overall quality of the fit is then parameterized in terms of a quantity
+ * known as the coefficient of determination, `r^2`, which is calculated as:
+ * ```
+ * r^2 = (n * Σ(x_i * y_i) - Σ(x_i) * Σ(y_i))^2 / ((n * Σ(x_i^2) - (Σ(x_i))^2) * (n * Σ(y_i^2) - (Σ(y_i))^2))
+ * ```
+ *
+ * @param x - The x values.
+ * @param y - The y values.
+ * @returns The slope, intercept, and coefficient of determination.
+ */
+export function OLS(x: number[], y: number[]) {
+  const n = x.length;
+  let Sx = 0;
+  let Sy = 0;
+  let Sxy = 0;
+  let Sxx = 0;
+  let Syy = 0;
+
+  for (let i = 0; i < n; i++) {
+    Sx += x[i];
+    Sy += y[i];
+    Sxy += x[i] * y[i];
+    Sxx += x[i] ** 2;
+    Syy += y[i] ** 2;
+  }
+
+  const m = (n * Sxy - Sx * Sy) / (n * Sxx - Sx ** 2);
+  const b = (Sy - Sxx - Sx * Sxy) / (n * Sxx - Sx ** 2);
+
+  const r2 = Math.pow(n * Sxy - Sx * Sy, 2) / ((n * Sxx - Sx ** 2) * (n * Syy - Sy ** 2));
+
+  return { m, b, r2 };
+}
+
+/**
+ * Check if a set of points is alternating up and down.
+ * @param points - The set of points.
+ * @returns `true` if the points are alternating, `false` otherwise.
+ */
 export function isAlternating(points: number[]) {
   // Consider a single element or empty array as alternating
   if (points.length < 2) return true;
