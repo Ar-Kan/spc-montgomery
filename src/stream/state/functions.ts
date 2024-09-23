@@ -1,6 +1,6 @@
-import { inRange, max, min, unzip } from "lodash";
+import { inRange, max, maxBy, min, unzip } from "lodash";
 import { DataSample } from "../data";
-import { computeEntropy, isAlternating, OLS } from "../stats";
+import { computeEntropy, isAlternating, OLS, scaleValue } from "../stats";
 
 import { SignalStateType } from "./models";
 
@@ -19,18 +19,18 @@ export function stateFromPointSignal({
 }) {
   samples = samples.filter((sample) => sample.length > 0);
 
-  if (samples.length > 0) {
-    // When the flags begin
-    const start = min(samples.map((sample) => sample[0].timestamp))!;
-    // When the flags end
-    const end = max(samples.map((sample) => sample[sample.length - 1].timestamp))!;
-    return {
-      state: lastSample.timestamp === end ? SignalStateType.ALERT : SignalStateType.WARNING,
-      timestamp: start,
-    };
+  if (samples.length === 0) {
+    return { state: SignalStateType.OK, timestamp: 0 };
   }
 
-  return { state: SignalStateType.OK, timestamp: 0 };
+  const mostRecent = maxBy(samples, (sample) => sample[sample.length - 1].timestamp)!;
+  return {
+    state:
+      lastSample.timestamp === mostRecent[mostRecent.length - 1].timestamp
+        ? SignalStateType.ALERT
+        : SignalStateType.WARNING,
+    timestamp: mostRecent[0].timestamp,
+  };
 }
 
 /**
@@ -126,12 +126,16 @@ export function getPointsWithTrend({
     const samples = streamReverse.slice(posStart - window, posStart).reverse();
 
     const [x, y] = unzip(samples.map((sample, index) => [index, sample.mean]));
-    const { m, r2 } = OLS(x, y);
+    const yMin = min(y)!;
+    const yMax = max(y)!;
+    const { m, r2 } = OLS(
+      x,
+      y.map((y) => scaleValue(y, yMin, yMax, 0, x.length - 1)),
+    );
 
     // Check if the correlation and slope are significant
-    // |m| = 1 => |x| = |y|
-    // FIXME: m values don't seem to be correct
-    if (r2 > 0.6 && Math.abs(m) > 0.03) {
+    // If x and y have the same range then |m| = 1 => |x| = |y| (line with 45°)
+    if (r2 > 0.7 && Math.abs(m) > 0.6) {
       return samples;
     }
 

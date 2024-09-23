@@ -25,6 +25,27 @@ export function nSample(n: number, mean = 0, std = 1) {
 }
 
 /**
+ * Scales a value from one range to another.
+ * @param value - Value to scale
+ * @param originalMin - Minimum value of the original range
+ * @param originalMax - Maximum value of the original range
+ * @param desiredMin - Minimum value of the new range
+ * @param desiredMax - Maximum value of the new range
+ * @returns The scaled value
+ */
+export function scaleValue(
+  value: number,
+  originalMin: number,
+  originalMax: number,
+  desiredMin: number,
+  desiredMax: number,
+): number {
+  return (
+    ((value - originalMin) / (originalMax - originalMin)) * (desiredMax - desiredMin) + desiredMin
+  );
+}
+
+/**
  * Compute an Ordinary Least Squares (OLS) regression.
  *
  * The OLS regression is calculated as:
