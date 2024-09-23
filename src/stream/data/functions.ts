@@ -65,7 +65,7 @@ export function computeChartControlLimits({
         UCD: factors.D4 * std,
         LCD: factors.D3 * std,
       }),
-      CenterLine: mean,
+      CenterLine: 0,
       STD: std,
     },
   };
