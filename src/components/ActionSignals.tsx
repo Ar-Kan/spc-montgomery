@@ -113,10 +113,27 @@ function Signal({
   );
 }
 
-export default function ActionSignals({ signalState }: { signalState: SignalStateMap }) {
+export default function ActionSignals({
+  signalState,
+  signalCheckWindow,
+}: {
+  signalState: SignalStateMap;
+  signalCheckWindow: number;
+}) {
   return (
     <div>
-      <h3>Action Signals</h3>
+      <h3>
+        <InfoOutlinedIcon
+          style={{
+            cursor: "help",
+            color: "gray",
+            fontSize: "1rem",
+          }}
+          data-tooltip-id="my-tooltip"
+          data-tooltip-content={`Using the last ${signalCheckWindow} samples.`}
+        />
+        Action Signals
+      </h3>
 
       {signalDescriptions.map((description) => (
         <Signal

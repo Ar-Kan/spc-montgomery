@@ -56,6 +56,7 @@ export default function App() {
 
   const [controlLimits, setControlLimits] = useState<ChartControlLimits | null>(null);
   const [signalState, setSignalState] = useState(actionSignalsState);
+  const [signalCheckWindow, setSignalCheckWindow] = useState(50);
   const [processState, setProcessState] = useState<ProcessState>(ProcessState.IN_CONTROL);
   const [pollingInterval, setPollingInterval] = useState<number>(0.5e3);
 
@@ -122,6 +123,7 @@ export default function App() {
           lastState: prevState,
           controlLimits: controlLimits.xBar,
           pollingInterval,
+          signalCheckWindow,
         }),
       );
 
@@ -219,7 +221,7 @@ export default function App() {
             <Indicator
               label="PCR"
               name="Process Capability Ratio"
-              description="Fraction of items produced that will meet the specifications."
+              description="Estimated fraction of items produced that will meet the specifications."
               value={
                 controlLimits !== null ? formatedPcr(estimatedParameters.std, factors_n5.d2) : "N/A"
               }
@@ -238,7 +240,7 @@ export default function App() {
             />
           </div>
 
-          <ActionSignals signalState={signalState} />
+          <ActionSignals signalState={signalState} signalCheckWindow={signalCheckWindow} />
         </div>
       </div>
     </div>

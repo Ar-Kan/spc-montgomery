@@ -28,13 +28,15 @@ export function signalCheck({
   lastState,
   pollingInterval,
   controlLimits,
+  signalCheckWindow,
 }: {
   stream: DataSample[];
   lastState: SignalStateMap;
   pollingInterval: number;
   controlLimits: ControlLimits;
+  signalCheckWindow: number;
 }): SignalStateMap {
-  const stream = _stream.slice(-50);
+  const stream = _stream.slice(-signalCheckWindow);
   if (stream.length === 0) {
     return actionSignalsState;
   }
