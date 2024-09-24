@@ -196,6 +196,7 @@ export default function App() {
             controlLimits={controlLimits?.R || null}
             durationTime={pollingInterval * 50}
             chartRef={chartRRef}
+            paddingPercentageTop={0.07}
           />
         </div>
 

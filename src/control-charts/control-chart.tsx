@@ -11,6 +11,7 @@ function chartLine({
   label,
   yAdjust = 0,
   xAdjust = 0,
+  borderWidth = 1,
 }: {
   value: number;
   color: string;
@@ -18,11 +19,12 @@ function chartLine({
   label?: string;
   yAdjust?: number;
   xAdjust?: number;
+  borderWidth?: number;
 }): AnnotationOptions {
   return {
     type: "line",
     borderColor: lineColor || color,
-    borderWidth: 1,
+    borderWidth,
     label: {
       display: !!label,
       backgroundColor: "transparent",
@@ -42,31 +44,40 @@ export default function ControlChart({
   datasetName,
   durationTime = 30e3,
   chartRef,
+  paddingPercentageTop = 0.03,
+  paddingPercentageBottom = 0.03,
 }: {
   controlLimits: ControlLimits | null;
   datasetName: string;
   durationTime?: number;
   chartRef: RefObject<ChartJS<"line", any[], number>>;
+  paddingPercentageTop?: number;
+  paddingPercentageBottom?: number;
 }) {
   if (controlLimits === null) {
     return null;
   }
 
   const { UCL, LCL, UWL, LWL, CenterLine, U1sCL, L1sCL } = controlLimits;
+
+  // Lines to add a padding to the chart
   const chartMinMax: AnnotationOptions[] = [
     {
       type: "line",
       borderWidth: 0,
       scaleID: "y",
-      value: UCL * 1.03,
+      value: UCL + UCL * paddingPercentageTop,
     },
     {
       type: "line",
       borderWidth: 0,
       scaleID: "y",
-      value: LCL - LCL * 0.03,
+      value: LCL - LCL * paddingPercentageBottom,
     },
   ];
+
+  const color = "rgba(140,100,200,0.6)";
+  const colorSecondary = "rgba(140,100,200,0.6)";
 
   return (
     <div>
@@ -85,47 +96,48 @@ export default function ControlChart({
               enabled: true,
             },
             title: {
-              display: true,
-              text: "Control",
+              display: false,
             },
             annotation: {
               annotations: [
                 ...chartMinMax,
                 chartLine({
                   value: UCL,
-                  color: "gray",
+                  color,
                   label: UCL.toFixed(4).toString(),
                   yAdjust: -10,
+                  borderWidth: 2,
                 }),
                 chartLine({
                   value: LCL,
-                  color: "gray",
+                  color,
                   label: LCL.toFixed(4).toString(),
                   yAdjust: 10,
+                  borderWidth: 2,
                 }),
                 chartLine({
                   value: UWL,
-                  color: "#a3a5ac",
+                  color,
                   label: UWL.toFixed(4).toString(),
                   yAdjust: -10,
                 }),
                 chartLine({
                   value: LWL,
-                  color: "#a3a5ac",
+                  color,
                   label: LWL.toFixed(4).toString(),
                   yAdjust: 10,
                 }),
                 chartLine({
                   value: U1sCL,
-                  color: "rgba(163,165,172,0.8)",
+                  color: colorSecondary,
                 }),
                 chartLine({
                   value: L1sCL,
-                  color: "rgba(163,165,172,0.8)",
+                  color: colorSecondary,
                 }),
                 chartLine({
                   value: CenterLine,
-                  color: "rgba(163,165,172,0.8)",
+                  color: colorSecondary,
                   yAdjust: -10,
                 }),
               ],
